@@ -19,7 +19,7 @@
   "devEngines": {
     "packageManager": {
       "name": "yarn",
-      "version": "1.22.22"
+      "version": "4.17.1"
     }
   },
   "workspaces": [

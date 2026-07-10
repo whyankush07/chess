@@ -5,14 +5,14 @@ import { ReactNode } from "react";
 interface ButtonProps {
   children: ReactNode;
   className?: string;
-  appName: string;
+  fn: () => void;
 }
 
-export const Button = ({ children, className, appName }: ButtonProps) => {
+export const Button = ({ children, className, fn }: ButtonProps) => {
   return (
     <button
-      className={className}
-      onClick={() => alert(`Hello from your ${appName} app!`)}
+      className={className + " cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md"}
+      onClick={() => fn()}
     >
       {children}
     </button>

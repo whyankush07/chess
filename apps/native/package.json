@@ -1,17 +1,21 @@
 {
-  "name": "chess-server",
+  "name": "@repo/chess-server",
   "version": "1.0.0",
   "description": "A WebSocket server for chess",
+  "type": "commonjs",
+  "targets": [
+    "ES2020"
+  ],
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev" : "tsc -b && node dist/index.js"
+    "dev": "tsc -b && node dist/index.js"
   },
   "keywords": [],
   "author": "Ankush",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
+    "@repo/db": "*",
     "@types/ws": "^8.18.1",
     "chess.js": "^1.4.0",
     "ws": "^8.21.0"
