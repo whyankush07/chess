@@ -5,16 +5,20 @@ import { type Square, type Move } from "chess.js";
 import useChess from "@/hooks/useChess";
 import ChessBoard from "@/components/chess-board";
 import { Button } from "@/components/ui/button";
+import useSocket from "@/hooks/useSocket";
 
 export default function GamePage() {
   const [playerColor] = useState<"w" | "b">("w");
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [validMoves, setValidMoves] = useState<Square[]>([]);
+  const [starting, setStarting] = useState<Boolean>(false);
+  const socket = useSocket();
 
   const onMove = useCallback((move: Move) => {
     // TODO: send move over socket
     console.log("Move made:", move.san, move.from, "->", move.to);
-  }, []);
+    socket?.send(JSON.stringify({ type: "move", payload: { from: move.from, to: move.to } }));
+  }, [socket]);
 
   const chess = useChess(undefined, onMove);
 
@@ -185,9 +189,11 @@ export default function GamePage() {
                 chess.reset();
                 setSelectedSquare(null);
                 setValidMoves([]);
+                setStarting(true);
+                socket?.send(JSON.stringify({ type: "init_game" }));
               }}
             >
-              New Game
+              {starting ? "Starting..." : "New Game"}
             </Button>
           </div>
 

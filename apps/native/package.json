@@ -6,9 +6,9 @@
   "targets": [
     "ES2020"
   ],
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node dist/index.js",
     "dev": "tsc -b && node dist/index.js"
   },
   "keywords": [],
