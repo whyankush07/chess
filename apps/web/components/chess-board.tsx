@@ -56,6 +56,7 @@ interface ChessBoardProps {
   isCheck: boolean;
   turn: "w" | "b";
   playerColor: "w" | "b";
+  manualFlip?: boolean;
   onSquareClick?: (square: Square) => void;
 }
 
@@ -67,9 +68,10 @@ export default function ChessBoard({
   isCheck,
   turn,
   playerColor,
+  manualFlip = false,
   onSquareClick,
 }: ChessBoardProps) {
-  const flipped = playerColor === "b";
+  const flipped = (playerColor === "b") !== manualFlip;
 
   const board = useMemo(() => parseFen(fen), [fen]);
 
@@ -93,27 +95,22 @@ export default function ChessBoard({
     }
   }
 
-  const SQUARE_SIZE = "h-[60px] w-[60px] text-[40px] sm:h-[67.5px] sm:w-[67.5px] sm:text-[44px]";
-
   return (
-    <div className="select-none">
-      <div className="flex">
-        <div className="flex flex-col pr-1 text-[11px] font-medium text-neutral-500">
+    <div className="w-full select-none">
+      <div className="flex gap-0.5">
+        <div className="flex flex-col text-[11px] font-medium text-neutral-500">
           {displayRanks.map((r) => (
             <div
               key={r}
-              className={cn(
-                "flex items-center justify-center",
-                SQUARE_SIZE.split(" ").filter((s) => s.startsWith("h-") || s.startsWith("sm:h-")).join(" ")
-              )}
+              className="aspect-square w-[18px] flex items-center justify-center"
             >
               {8 - r}
             </div>
           ))}
         </div>
 
-        <div>
-          <div className="grid grid-cols-8 grid-rows-8 border-2 border-neutral-800">
+        <div className="flex-1 min-w-0">
+          <div className="grid grid-cols-8 border-2 border-neutral-800">
             {displayRanks.map((r) =>
               displayFiles.map((f) => {
                 const piece = board[r]?.[f];
@@ -130,8 +127,7 @@ export default function ChessBoard({
                     key={sq}
                     onClick={() => onSquareClick?.(sq)}
                     className={cn(
-                      "relative flex items-center justify-center leading-none transition-colors cursor-pointer",
-                      SQUARE_SIZE,
+                      "relative flex items-center justify-center leading-none transition-colors cursor-pointer aspect-square text-[clamp(20px,5.5vw,44px)]",
                       isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]",
                       isSelected && "bg-[#f7ec5a]!",
                       isLastMove &&
@@ -141,10 +137,10 @@ export default function ChessBoard({
                         "bg-[radial-gradient(circle_at_center,rgba(255,0,0,0.6)_0%,rgba(255,0,0,0.3)_50%,transparent_70%)]",
                       isValidMove &&
                         !piece &&
-                        "after:absolute after:h-3 after:w-3 after:rounded-full after:bg-black/20 after:content-[''] sm:after:h-3.5 sm:after:w-3.5",
+                        "after:absolute after:inset-[35%] after:rounded-full after:bg-black/20 after:content-['']",
                       isValidMove &&
                         !!piece &&
-                        "after:absolute after:inset-0 after:rounded-full after:border-[3px] after:border-black/20 after:content-['']"
+                        "after:absolute after:inset-[10%] after:rounded-full after:border-[3px] after:border-black/20 after:content-['']"
                     )}
                   >
                     {piece
@@ -156,14 +152,12 @@ export default function ChessBoard({
             )}
           </div>
 
-          <div className="grid grid-cols-8">
+          <div className="flex">
+            <div className="w-[18px] shrink-0" />
             {displayFiles.map((f) => (
               <div
                 key={f}
-                className={cn(
-                  "flex items-center justify-center text-[11px] font-medium text-neutral-500",
-                  SQUARE_SIZE.split(" ").filter((s) => s.startsWith("w-") || s.startsWith("sm:w-")).join(" ")
-                )}
+                className="flex-1 flex items-center justify-center pt-0.5 text-[11px] font-medium text-neutral-500"
               >
                 {"abcdefgh"[f]}
               </div>

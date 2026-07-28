@@ -1,26 +1,47 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { type Square, type Move } from "chess.js";
 import useChess from "@/hooks/useChess";
 import ChessBoard from "@/components/chess-board";
-import { Button } from "@/components/ui/button";
-import useSocket from "@/hooks/useSocket";
+import useSocket, { setMoveCallback } from "@/hooks/useSocket";
+import { TbArrowsExchange } from "react-icons/tb";
 
 export default function GamePage() {
-  const [playerColor] = useState<"w" | "b">("w");
+  const searchParams = useSearchParams();
+  const colorParam = searchParams.get("color");
+  const [playerColor] = useState<"w" | "b">(
+    colorParam === "b" ? "b" : "w"
+  );
+  const [manualFlip, setManualFlip] = useState(false);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [validMoves, setValidMoves] = useState<Square[]>([]);
-  const [starting, setStarting] = useState<boolean>(false);
-  const socket = useSocket();
-
+  const { socket } = useSocket();
+  
+  const skipSendRef = useRef(false);
+  
   const onMove = useCallback((move: Move) => {
-    // TODO: send move over socket
+    if (skipSendRef.current) return;
     console.log("Move made:", move.san, move.from, "->", move.to);
     socket?.send(JSON.stringify({ type: "move", payload: { from: move.from, to: move.to } }));
   }, [socket]);
-
+  
   const chess = useChess(undefined, onMove);
+
+  const handleOpponentMove = useCallback((payload: { from: string; to: string }) => {
+    skipSendRef.current = true;
+    chess.makeMove(payload.from as Square, payload.to as Square);
+    skipSendRef.current = false;
+    setSelectedSquare(null);
+    setValidMoves([]);
+  }, [chess]);
+
+  useEffect(() => {
+    setMoveCallback(handleOpponentMove);
+    return () => setMoveCallback(null);
+  }, [handleOpponentMove]);
+
 
   const handleSquareClick = useCallback(
     (square: Square) => {
@@ -65,21 +86,6 @@ export default function GamePage() {
     [chess, selectedSquare, playerColor]
   );
 
-  const statusText = (() => {
-    if (chess.isCheckmate) {
-      const winner = chess.turn === "w" ? "Black" : "White";
-      return `Checkmate — ${winner} wins`;
-    }
-    if (chess.isStalemate) return "Stalemate — Draw";
-    if (chess.isThreefoldRepetition) return "Draw by repetition";
-    if (chess.isInsufficientMaterial) return "Draw — insufficient material";
-    if (chess.isDraw) return "Draw";
-    if (chess.isCheck) {
-      return chess.turn === "w" ? "White is in check" : "Black is in check";
-    }
-    return chess.turn === "w" ? "White to move" : "Black to move";
-  })();
-
   const movePairs: { white: Move; black: Move | null }[] = [];
   for (let i = 0; i < chess.moveHistory.length; i += 2) {
     movePairs.push({
@@ -90,64 +96,58 @@ export default function GamePage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 p-4">
-      <div className="flex gap-6">
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex w-full items-center justify-between rounded-sm bg-neutral-800 px-3 py-2 text-sm text-neutral-200">
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-neutral-400 border border-neutral-600" />
-              <span className="font-medium">
-                {playerColor === "w" ? "White" : "Black"}
-              </span>
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center lg:items-start w-full max-w-[900px]">
+        <div className="flex flex-col items-center gap-3 w-full max-w-[540px]">
+          <div className="relative w-full flex items-center justify-center">
+            <button
+              onClick={() => setManualFlip((f) => !f)}
+              className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center justify-center h-8 w-8 rounded-md border border-neutral-300 bg-white hover:bg-neutral-100 transition-colors cursor-pointer"
+              title="Flip board"
+            >
+              <TbArrowsExchange className="text-neutral-600 text-lg" />
+            </button>
+            <div className="text-sm font-medium text-neutral-700">
+              {chess.turn === "w" ? "White to move" : "Black to move"}
+              {chess.isCheck && !chess.isGameOver && (
+                <span className="ml-2 text-xs text-amber-500 font-semibold uppercase tracking-wider">
+                  Check
+                </span>
+              )}
+              {chess.isGameOver && (
+                <span className="ml-2 text-xs font-semibold uppercase tracking-wider">
+                  {chess.isCheckmate
+                    ? chess.turn === "w"
+                      ? "Black wins"
+                      : "White wins"
+                    : "Draw"}
+                </span>
+              )}
             </div>
-            {chess.isCheck && !chess.isGameOver && (
-              <span className="text-xs text-amber-400 font-semibold uppercase tracking-wider">
-                Check
-              </span>
-            )}
           </div>
 
-          <ChessBoard
-            fen={chess.fen}
-            selectedSquare={selectedSquare}
-            validMoves={validMoves}
-            lastMove={chess.lastMove
-              ? { from: chess.lastMove.from, to: chess.lastMove.to }
-              : null}
-            isCheck={chess.isCheck}
-            turn={chess.turn}
-            playerColor={playerColor}
-            onSquareClick={handleSquareClick}
-          />
-
-          <div className="flex w-full items-center justify-between rounded-sm bg-neutral-800 px-3 py-2 text-sm text-neutral-200">
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-neutral-900 border border-neutral-600" />
-              <span className="font-medium">
-                {playerColor === "w" ? "Black" : "White"}
-              </span>
-            </div>
-            {chess.isGameOver && (
-              <span className="text-xs text-amber-400 font-semibold uppercase tracking-wider">
-                {chess.isCheckmate
-                  ? chess.turn === "w"
-                    ? "Black wins"
-                    : "White wins"
-                  : "Draw"}
-              </span>
-            )}
-          </div>
-
-          <div className="mt-1 w-full rounded-sm border border-neutral-300 bg-white px-3 py-2 text-center text-sm font-medium text-neutral-700">
-            {statusText}
+          <div className="relative w-full">
+            <ChessBoard
+              fen={chess.fen}
+              selectedSquare={selectedSquare}
+              validMoves={validMoves}
+              lastMove={chess.lastMove
+                ? { from: chess.lastMove.from, to: chess.lastMove.to }
+                : null}
+              isCheck={chess.isCheck}
+              turn={chess.turn}
+              playerColor={playerColor}
+              manualFlip={manualFlip}
+              onSquareClick={handleSquareClick}
+            />
           </div>
         </div>
 
-        <div className="flex w-56 flex-col gap-3">
+        <div className="w-full lg:w-56 shrink-0">
           <div className="rounded-sm border border-neutral-300 bg-white">
             <div className="border-b border-neutral-200 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-500">
               Moves
             </div>
-            <div className="h-80 overflow-y-auto p-2">
+            <div className="h-48 lg:h-80 overflow-y-auto p-2">
               {movePairs.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-xs text-neutral-400">
                   No moves yet
@@ -179,26 +179,6 @@ export default function GamePage() {
                 </table>
               )}
             </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                chess.reset();
-                setSelectedSquare(null);
-                setValidMoves([]);
-                setStarting(true);
-                socket?.send(JSON.stringify({ type: "init_game" }));
-              }}
-            >
-              {starting ? "Starting..." : "New Game"}
-            </Button>
-          </div>
-
-          <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-2 text-[11px] leading-relaxed text-neutral-500">
-            <span className="font-mono text-[10px]">{chess.fen}</span>
           </div>
         </div>
       </div>

@@ -6,11 +6,12 @@ import useChess from "@/hooks/useChess";
 import ChessBoard from "@/components/chess-board";
 import { Button } from "@/components/ui/button";
 import useSocket from "@/hooks/useSocket";
-import { TbLoader4 } from "react-icons/tb";
+import { TbLoader4, TbArrowsExchange } from "react-icons/tb";
 import { toast } from "sonner";
 
 export default function GamePage() {
   const [playerColor] = useState<"w" | "b">("w");
+  const [manualFlip, setManualFlip] = useState(false);
   const [selectedSquare,] = useState<Square | null>(null);
   const [validMoves,] = useState<Square[]>([]);
   const [starting, setStarting] = useState<boolean>(false);
@@ -47,17 +48,27 @@ export default function GamePage() {
             )}
           </div>
 
-          <ChessBoard
-            fen={chess.fen}
-            selectedSquare={selectedSquare}
-            validMoves={validMoves}
-            lastMove={chess.lastMove
-              ? { from: chess.lastMove.from, to: chess.lastMove.to }
-              : null}
-            isCheck={chess.isCheck}
-            turn={chess.turn}
-            playerColor={playerColor}
-          />
+          <div className="relative">
+            <button
+              onClick={() => setManualFlip((f) => !f)}
+              className="absolute -left-10 top-1/2 -translate-y-1/2 flex items-center justify-center h-8 w-8 rounded-md border border-neutral-300 bg-white hover:bg-neutral-100 transition-colors cursor-pointer"
+              title="Flip board"
+            >
+              <TbArrowsExchange className="text-neutral-600 text-lg" />
+            </button>
+            <ChessBoard
+              fen={chess.fen}
+              selectedSquare={selectedSquare}
+              validMoves={validMoves}
+              lastMove={chess.lastMove
+                ? { from: chess.lastMove.from, to: chess.lastMove.to }
+                : null}
+              isCheck={chess.isCheck}
+              turn={chess.turn}
+              playerColor={playerColor}
+              manualFlip={manualFlip}
+            />
+          </div>
 
           <div className="flex w-full items-center justify-between rounded-sm bg-neutral-800 px-3 py-2 text-sm text-neutral-200">
             <div className="flex items-center gap-2">

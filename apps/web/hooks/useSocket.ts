@@ -3,44 +3,57 @@ import { useRouter } from "next/navigation";
 
 const WEBSOCKET_URL = "ws://localhost:8080"
 
+let globalSocket: WebSocket | null = null;
+
+type MovePayload = { from: string; to: string; promotion?: string };
+let moveCallback: ((payload: MovePayload) => void) | null = null;
+
+export function setMoveCallback(cb: ((payload: MovePayload) => void) | null) {
+    moveCallback = cb;
+}
+
 export default function useSocket() {
-    const [socket, setSocket] = useState<WebSocket | null>(null);
+    const [socket, setSocket] = useState<WebSocket | null>(globalSocket);
     const router = useRouter();
 
     const openGame = () => {
-        if (socket) return;
+        if (globalSocket && globalSocket.readyState === WebSocket.OPEN) {
+            return;
+        }
         const ws = new WebSocket(WEBSOCKET_URL);
 
         ws.onopen = () => {
             console.log("Websocket connection established");
+            globalSocket = ws;
             setSocket(ws);
             ws.send(JSON.stringify({ type: "init_game" }));
         }
-    }
 
-    useEffect(() => {
-        if (!socket) return;
-        console.log("Websocket running.....");
-
-        socket.onmessage = (event) => {
+        ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
             const { type, payload } = message;
             if (type === "init_game") {
                 console.log("Game initialized:", payload);
-                router.push(`/game/${payload.gameId}`);
+                const color = payload.color === "White" ? "w" : "b";
+                router.push(`/game/${payload.gameId}?color=${color}`);
+            } else if (type === "move") {
+                console.log("Move received:", payload);
+                moveCallback?.(payload);
             }
         }
 
-        socket.onclose = () => {
-            setSocket(null);
+        ws.onclose = () => {
             console.log("Websocket connection closed!");
+            globalSocket = null;
+            setSocket(null);
         }
+    }
 
+    useEffect(() => {
         return () => {
-            console.log("Closing websocket connection");
-            socket?.close();
+            // socket lifecycle is managed by openGame/onclose — no close on unmount
         }
-    }, [socket]);
+    }, []);
 
     return { socket, openGame };
 }

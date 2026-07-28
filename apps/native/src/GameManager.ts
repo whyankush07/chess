@@ -16,6 +16,7 @@ export class GameManager {
     addUser(socket : WebSocket) {
         this.users.push(socket);
         console.log("User " + this.users.length + " connected");
+        console.log("total games: ", this.games.length);
         this.addHandler(socket);
     }
 
@@ -38,7 +39,6 @@ export class GameManager {
         socket.on("message" , (data) => {
             const msg = JSON.parse(data.toString());
             if (msg.type == INIT_GAME) {
-                console.log("init_game message received");
                 if (this.pendingUser) {
                     const game = new Game(this.pendingUser, socket);
                     this.pendingUser = null;
@@ -47,9 +47,11 @@ export class GameManager {
                     this.pendingUser = socket;
                 }
             } else if (msg.type == MOVE) {
+                console.log("move message received", msg.payload);
+                console.log(this.users.length);
                 const game = this.games.find((game) => game.whiteP === socket || game.blackP === socket);
                 if (game) {
-                    game.makeMove(socket, msg.move);
+                    game.makeMove(socket, msg.payload);
                 }
             }
         })

@@ -81,23 +81,12 @@ export class Game {
             const payload = { winner };
             this.whiteP.send(JSON.stringify({ type: GAME_OVER, payload }));
             this.blackP.send(JSON.stringify({ type: GAME_OVER, payload }));
-            this.whiteP.close();
-            this.blackP.close();
-            return;
         }
 
-        if (this.board.moves().length % 2 === 0) {
-            console.log("White to move");
-            this.blackP.send(JSON.stringify({
-                type: MOVE,
-                payload: move
-            }));
-        } else {
-            console.log("Black to move");
-            this.whiteP.send(JSON.stringify({
-                type: MOVE,
-                payload: move
-            }));
-        }
+        const opponent = socket === this.whiteP ? this.blackP : this.whiteP;
+        opponent.send(JSON.stringify({
+            type: MOVE,
+            payload: move
+        }));
     }
 }

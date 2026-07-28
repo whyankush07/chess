@@ -12,5 +12,9 @@ wss.on('listening', () => {
 wss.on('connection', function connection(ws) {
   gameManager.addUser(ws);
 
-  ws.on("close", () => gameManager.removeUser(ws));
+  // ws.on('message', function incoming(message) {
+  //   console.log('received: %s', message);
+  // });
+
+  // ws.on("close", () => gameManager.removeUser(ws));
 });
