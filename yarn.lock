@@ -1037,6 +1037,7 @@ __metadata:
     "@repo/db": "npm:*"
     "@types/ws": "npm:^8.18.1"
     chess.js: "npm:^1.4.0"
+    uuid: "npm:^14.0.1"
     ws: "npm:^8.21.0"
   languageName: unknown
   linkType: soft
@@ -1971,6 +1972,7 @@ __metadata:
     prettier: "npm:^3.7.4"
     turbo: "npm:^2.10.4"
     typescript: "npm:5.9.2"
+    uuid: "npm:^14.0.1"
   languageName: unknown
   linkType: soft
 
@@ -5058,6 +5060,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-icons@npm:^5.7.0":
+  version: 5.7.0
+  resolution: "react-icons@npm:5.7.0"
+  peerDependencies:
+    react: "*"
+  checksum: 10c0/cc5ae92e61ef9d8fc83cb3f3ac2710deab9174c5831bdaf2a94b099acfc91074a60d4b3adfd3165dcb9b21799ca6c760b3f4f6596d75198c1ed2ea44240818c8
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.13.1":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -5574,6 +5585,16 @@ __metadata:
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
   checksum: 10c0/230ac975cca485b7f6fe2b96a711aa62a6a26ead3e6fb8ba17c5a00d61b8bed0d7adc21f5626b70d7c33c62ff4e63933017a6462942c719d1980bb0b1207ad46
+  languageName: node
+  linkType: hard
+
+"sonner@npm:^2.0.7":
+  version: 2.0.7
+  resolution: "sonner@npm:2.0.7"
+  peerDependencies:
+    react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+    react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+  checksum: 10c0/6966ab5e892ed6aab579a175e4a24f3b48747f0fc21cb68c3e33cb41caa7a0eebeb098c210545395e47a18d585eb8734ae7dd12d2bd18c8a3294a1ee73f997d9
   languageName: node
   linkType: hard
 
@@ -6150,6 +6171,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:^14.0.1":
+  version: 14.0.1
+  resolution: "uuid@npm:14.0.1"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/2d961289097cb68c37d93d1da0b5c3aafc1eb9948a455cca8d0ae53a099b2fe583b8933254a84097f700e6bac2e23033364904df0467c22551d5d9611febcaf6
+  languageName: node
+  linkType: hard
+
 "validate-npm-package-name@npm:^7.0.1":
   version: 7.0.2
   resolution: "validate-npm-package-name@npm:7.0.2"
@@ -6185,8 +6215,10 @@ __metadata:
     postcss: "npm:^8.5.16"
     react: "npm:^19.2.0"
     react-dom: "npm:^19.2.0"
+    react-icons: "npm:^5.7.0"
     shadcn: "npm:^4.13.0"
     shadcn-ui: "npm:^0.9.5"
+    sonner: "npm:^2.0.7"
     tailwind-merge: "npm:^3.6.0"
     tailwindcss: "npm:^4.3.2"
     tw-animate-css: "npm:^1.4.0"

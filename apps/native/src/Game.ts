@@ -1,14 +1,17 @@
 import { WebSocket } from "ws";
 import { Chess } from "chess.js"
 import { GAME_OVER, INFO, INIT_GAME, MOVE } from "./message";
+import { v4 as uuidv4 } from 'uuid';
 
 export class Game {
+    private gameId: string;
     public whiteP: WebSocket;
     public blackP: WebSocket;
     private board: Chess;
     private startTime: Date;
 
     constructor(whiteP: WebSocket, blackP: WebSocket) {
+        this.gameId = uuidv4();
         this.whiteP = whiteP;
         this.blackP = blackP;
         this.board = new Chess();
@@ -16,15 +19,21 @@ export class Game {
         this.whiteP.send(JSON.stringify({
             type: INIT_GAME,
             payload: {
-                color: "White"
+                gameId: this.gameId,
+                color: "White",
+                info: "White to move"
             }
         }));
         this.blackP.send(JSON.stringify({
             type: INIT_GAME,
             payload: {
-                color: "Black"
+                gameId: this.gameId,
+                color: "Black",
+                info: "White to move"
             }
         }));
+        console.log("Game created with ID: " + this.gameId);
+        // todo: push this data to the queue for the handler worker to update the database
     }
 
     makeMove(socket: WebSocket, move: {

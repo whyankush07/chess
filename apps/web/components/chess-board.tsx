@@ -56,7 +56,7 @@ interface ChessBoardProps {
   isCheck: boolean;
   turn: "w" | "b";
   playerColor: "w" | "b";
-  onSquareClick: (square: Square) => void;
+  onSquareClick?: (square: Square) => void;
 }
 
 export default function ChessBoard({
@@ -128,7 +128,7 @@ export default function ChessBoard({
                 return (
                   <button
                     key={sq}
-                    onClick={() => onSquareClick(sq)}
+                    onClick={() => onSquareClick?.(sq)}
                     className={cn(
                       "relative flex items-center justify-center leading-none transition-colors cursor-pointer",
                       SQUARE_SIZE,

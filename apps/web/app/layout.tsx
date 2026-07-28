@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "@/styles/globals.css";
 import { Noto_Sans, Playfair_Display } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { Toaster } from 'sonner';
 
 const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--font-heading'});
 
@@ -30,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", notoSans.variable, playfairDisplayHeading.variable)}>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Toaster richColors position="top-right" />
         {children}
       </body>
     </html>
