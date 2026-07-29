@@ -1,159 +1,83 @@
-# Turborepo starter
+# ♜ Chess
 
-This Turborepo starter is maintained by the Turborepo core team.
+A real-time multiplayer chess platform. Two people open the app, get paired, and play a game of chess move-by-move over WebSockets. The server validates every move, the client updates instantly, and moves are streamed through Redis for async processing.
 
-## Using this example
+## Current Architecture
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
+```
+Browser (Next.js)                 Node.js WebSocket Server              Redis
+┌────────────────────┐           ┌──────────────────────────┐       ┌──────────┐
+│  Landing Page (/)  │           │  WebSocket Server :8080  │       │ Streams  │
+│         │          │           │                          │       │ game:    │
+│  /game              │           │  GameManager              │       │ moves    │
+│   opens WS ────────┼──────────▶│   ├─ pendingUser         │       └──────────┘
+│         │          │           │   ├─ users[]             │            ▲
+│  /game/[gameId]    │           │   └─ games[]             │            │
+│   ChessBoard       │           │         │                │            │
+│   useChess()       │           │    Game (chess.js)       │────────────┘
+│   useSocket()      │◀──MOVE────│    ├─ makeMove()         │
+│                    │           │    ├─ turn validation    │       ┌──────────┐
+│                    │           │    └─ game-over check    │       │PostgreSQL│
+│                    │           │                          │       │(schema   │
+│   @repo/types      │           │   @repo/db ──────────────┼──────▶│ ready,   │
+│   @repo/ui         │           │                          │       │ unwired) │
+└────────────────────┘           └──────────────────────────┘       └──────────┘
 ```
 
-## What's inside?
+### How it plays
 
-This Turborepo includes the following packages/apps:
+1. A user opens the app and clicks **Start Game** → lands on `/game`.
+2. Hitting **New Game** opens a WebSocket to `localhost:8080` and sends `init_game`.
+3. The **GameManager** pairs the first two players who arrive — first is White, second is Black.
+4. Both receive an `INIT_GAME` message with their assigned `gameId` and `color`.
+5. They land on `/game/[gameId]` which renders the **ChessBoard** component.
+6. Clicking a piece shows legal moves (computed locally via `chess.js` for instant feedback). Clicking a valid destination sends a `move` over the WebSocket.
+7. The server's `Game` class validates the move (turn ownership, legality via `chess.js`), forwards the `MOVE` to the opponent, and publishes the event to a Redis stream (`game:moves`) for future async persistence.
+8. The opponent's board updates immediately when the `MOVE` arrives.
 
-### Apps and Packages
+### Key modules
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+| Module | Role |
+|---|---|
+| **apps/web** | Next.js 16 frontend — landing, lobby, game board, WebSocket client |
+| **apps/native** | Node.js WebSocket server — game matching, authoritative move validation, Redis publishing |
+| **packages/db** | PostgreSQL client + schema (`User`, `Game`, `Move` tables) — prepared but not yet wired into game flow |
+| **packages/types** | Shared TypeScript types and message constants (`INIT_GAME`, `MOVE`, `GAME_OVER`, etc.) |
+| **packages/ui** | Shared React component stubs |
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Stack
 
-### Utilities
+Turborepo · Yarn 4 · Next.js 16 · React 19 · TypeScript 5.9 · Tailwind CSS v4 · shadcn/ui · chess.js · ws · ioredis · PostgreSQL · Redis Streams
 
-This Turborepo has some additional tools already setup for you:
+---
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Future Plans
 
-### Build
+### Infra / Scaling
 
-To build all apps and packages, run the following command:
+- **Redis** — session store, pub-sub for cross-instance move broadcast, matchmaking queue, rate limiting
+- Horizontal scaling of native WS servers behind a load balancer (sticky sessions or Redis pub-sub to desync game state from a single instance)
+- **Message queue** (Kafka / RabbitMQ / SQS) for async jobs — game history writes, rating recalculation, email/notification dispatch
+- Separate microservices: **auth-service**, **game-service**, **matchmaking-service**, **history-service**, **notification-service**
+- **API Gateway** in front of services (routing, auth verification, rate limiting)
+- **Service discovery** (Consul / etcd) once the system is multi-service
+- **CDN** for static assets (board themes, piece sets, sounds)
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+### Auth
 
-```sh
-cd my-turborepo
-turbo build
-```
+- Dedicated auth service — JWT issuance/refresh, OAuth (Google/GitHub), session management
+- Auth middleware shared across services (verify JWT at gateway or per-service)
+- **RBAC** for admin/moderator roles (ban, review reported games)
 
-Without global `turbo`, use your package manager:
+### Data / Persistence
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-yarn exec turbo build
-```
+- Separate DB per service (or schema separation) — auth-db, game-db, billing-db
+- **Read replicas** for game history / leaderboard queries
+- Time-series or partitioned tables for move history at scale
+- **Caching layer** (Redis) for hot data — active games, leaderboards, user profiles
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### Real-time / Pub-Sub
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-yarn exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-yarn exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-yarn exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-yarn exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-yarn exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- **Redis Pub/Sub** or NATS for broadcasting moves across horizontally-scaled WS servers
+- WebSocket connection registry in Redis (which server holds which user's socket)
+- **Presence system** (online/offline/in-game status) via Redis
