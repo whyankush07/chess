@@ -7,6 +7,7 @@ import useChess from "@/hooks/useChess";
 import ChessBoard from "@/components/chess-board";
 import useSocket, { setMoveCallback } from "@/hooks/useSocket";
 import { TbArrowsExchange } from "react-icons/tb";
+import { MOVE } from "@repo/types/message";
 
 export default function GamePage() {
   const searchParams = useSearchParams();
@@ -18,15 +19,14 @@ export default function GamePage() {
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [validMoves, setValidMoves] = useState<Square[]>([]);
   const { socket } = useSocket();
-  
+
   const skipSendRef = useRef(false);
-  
+
   const onMove = useCallback((move: Move) => {
     if (skipSendRef.current) return;
-    console.log("Move made:", move.san, move.from, "->", move.to);
-    socket?.send(JSON.stringify({ type: "move", payload: { from: move.from, to: move.to } }));
+    socket?.send(JSON.stringify({ type: MOVE, payload: { from: move.from, to: move.to } }));
   }, [socket]);
-  
+
   const chess = useChess(undefined, onMove);
 
   const handleOpponentMove = useCallback((payload: { from: string; to: string }) => {

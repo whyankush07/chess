@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { MOVE, INIT_GAME } from "@repo/types/message";
 
 const WEBSOCKET_URL = "ws://localhost:8080"
 
@@ -26,17 +27,17 @@ export default function useSocket() {
             console.log("Websocket connection established");
             globalSocket = ws;
             setSocket(ws);
-            ws.send(JSON.stringify({ type: "init_game" }));
+            ws.send(JSON.stringify({ type: INIT_GAME }));
         }
 
         ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
             const { type, payload } = message;
-            if (type === "init_game") {
+            if (type === INIT_GAME) {
                 console.log("Game initialized:", payload);
                 const color = payload.color === "White" ? "w" : "b";
                 router.push(`/game/${payload.gameId}?color=${color}`);
-            } else if (type === "move") {
+            } else if (type === MOVE) {
                 console.log("Move received:", payload);
                 moveCallback?.(payload);
             }

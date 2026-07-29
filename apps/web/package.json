@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@repo/types": "*",
     "@repo/ui": "*",
     "@tailwindcss/postcss": "^4.3.2",
     "chess.js": "^1.4.0",

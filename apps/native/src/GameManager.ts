@@ -1,13 +1,16 @@
 import { Game } from "./Game";
 import { WebSocket } from "ws";
-import { GAME_OVER, INIT_GAME, MOVE } from "./message";
+import { GAME_OVER, INIT_GAME, MOVE } from "@repo/types/message";
+import { Publisher } from "./Publisher";
 
 export class GameManager {
     private games: Game[];
     private pendingUser : WebSocket | null;
     private users : WebSocket[];
+    private publisher : Publisher;
 
-    constructor() {
+    constructor(publisher: Publisher) {
+        this.publisher = publisher;
         this.games = [];
         this.pendingUser = null;
         this.users = [];
@@ -40,7 +43,7 @@ export class GameManager {
             const msg = JSON.parse(data.toString());
             if (msg.type == INIT_GAME) {
                 if (this.pendingUser) {
-                    const game = new Game(this.pendingUser, socket);
+                    const game = new Game(this.pendingUser, socket, this.publisher);
                     this.pendingUser = null;
                     this.games.push(game);
                 } else {
