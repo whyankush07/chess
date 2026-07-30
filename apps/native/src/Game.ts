@@ -38,6 +38,7 @@ export class Game {
         }));
         console.log("Game created with ID: " + this.gameId);
         // todo: push this data to the queue for the handler worker to update the database
+        
     }
 
     makeMove(socket: WebSocket, move: {

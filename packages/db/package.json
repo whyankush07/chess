@@ -11,12 +11,17 @@
   "targets": [
     "ES2020"
   ],
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js",
+    "build": "tsc -b"
+  },
   "license": "MIT",
   "dependencies": {
     "@repo/types": "*",
     "@types/pg": "^8.20.0",
     "dotenv": "^17.4.2",
-    "pg": "^8.22.0"
+    "pg": "^8.22.0",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@repo/typescript-config": "*"

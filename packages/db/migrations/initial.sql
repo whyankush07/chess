@@ -1,10 +1,19 @@
-CREATE TYPE "GameStatus" AS ENUM ('IN_PROGRESS', 'COMPLETED', 'ABANDONED');
+DO $$ BEGIN
+    CREATE TYPE "GameStatus" AS ENUM ('IN_PROGRESS', 'COMPLETED', 'ABANDONED');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "GameResult" AS ENUM ('WHITE_WINS', 'BLACK_WINS', 'DRAW');
+DO $$ BEGIN
+    CREATE TYPE "GameResult" AS ENUM ('WHITE_WINS', 'BLACK_WINS', 'DRAW');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "TimeControl" AS ENUM ('CLASSICAL', 'RAPID', 'BLITZ', 'BULLET');
+DO $$ BEGIN
+    CREATE TYPE "TimeControl" AS ENUM ('CLASSICAL', 'RAPID', 'BLITZ', 'BULLET');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "User" (
+CREATE TABLE IF NOT EXISTS "User" (
     "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -16,7 +25,7 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
-CREATE TABLE "Game" (
+CREATE TABLE IF NOT EXISTS "Game" (
     "id" TEXT NOT NULL,
     "whitePlayerId" TEXT NOT NULL,
     "blackPlayerId" TEXT NOT NULL,
@@ -33,12 +42,12 @@ CREATE TABLE "Game" (
     CONSTRAINT "Game_pkey" PRIMARY KEY ("id")
 );
 
-CREATE TABLE "Move" (
+CREATE TABLE IF NOT EXISTS "Move" (
     "id" TEXT NOT NULL,
     "gameId" TEXT NOT NULL,
     "moveNumber" INTEGER NOT NULL,
     "notation" TEXT NOT NULL,
-    "comments" TEXT
+    "comments" TEXT,
     "startFen" TEXT NOT NULL,
     "endFen" TEXT NOT NULL,
     "timeTaken" INTEGER DEFAULT 0,
@@ -47,18 +56,23 @@ CREATE TABLE "Move" (
     CONSTRAINT "Move_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_username_key" ON "User"("username");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
+CREATE INDEX IF NOT EXISTS "User_rating_idx" ON "User"("rating");
+CREATE INDEX IF NOT EXISTS "Game_status_result_idx" ON "Game"("status", "result");
+CREATE INDEX IF NOT EXISTS "Move_gameId_idx" ON "Move"("gameId");
 
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+DO $$ BEGIN
+    ALTER TABLE "Game" ADD CONSTRAINT "Game_whitePlayerId_fkey" FOREIGN KEY ("whitePlayerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE INDEX "User_rating_idx" ON "User"("rating");
+DO $$ BEGIN
+    ALTER TABLE "Game" ADD CONSTRAINT "Game_blackPlayerId_fkey" FOREIGN KEY ("blackPlayerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE INDEX "Game_status_result_idx" ON "Game"("status", "result");
-
-CREATE INDEX "Move_gameId_idx" ON "Move"("gameId");
-
-ALTER TABLE "Game" ADD CONSTRAINT "Game_whitePlayerId_fkey" FOREIGN KEY ("whitePlayerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE "Game" ADD CONSTRAINT "Game_blackPlayerId_fkey" FOREIGN KEY ("blackPlayerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE "Move" ADD CONSTRAINT "Move_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "Game"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Move" ADD CONSTRAINT "Move_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "Game"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

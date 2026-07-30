@@ -7,3 +7,5 @@
 - 29/06/2024 - The redis stream was setup to handle the game state and pass moves to a another server which can pass it to database, use it for analytics, can be streamed to users.
 - 30/06/2024 - The MOVE_EVENT type was created to pass moves from publisher and query for inserting a move was created.
 - 30/06/2024 - The history-worker was created to listen to the redis stream and insert moves into the database. The consumer class was implemented to handle the redis stream and acknowledge messages.
+- 30/06/2024 - The publisher class was updated to publish moves to the redis stream and the game state to the database. The publisher class was also updated to ensure that the redis stream is connected before publishing.
+- 30/06/2024 - The history-worker was updated to ensure that the redis stream is connected before consuming messages. The history-worker was also updated to ensure that the consumer group is created before consuming messages.

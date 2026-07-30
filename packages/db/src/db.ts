@@ -15,7 +15,7 @@ export class DB {
 
     async RunMigrations(): Promise<void> {
         console.log("Starting database migrations...");
-        const migrationsDir = path.join(process.cwd(), "migrations");
+        const migrationsDir = path.join(__dirname, "..", "migrations");
         const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort();
 
         for (const file of files) {

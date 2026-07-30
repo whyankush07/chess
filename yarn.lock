@@ -1069,6 +1069,7 @@ __metadata:
     "@types/pg": "npm:^8.20.0"
     dotenv: "npm:^17.4.2"
     pg: "npm:^8.22.0"
+    uuid: "npm:^14.0.1"
   languageName: unknown
   linkType: soft
 
