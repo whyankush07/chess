@@ -2,12 +2,18 @@
   "name": "@repo/db",
   "version": "1.0.0",
   "type": "commonjs",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js",
+    "./queries/*": "./dist/queries/*.js"
+  },
   "targets": [
     "ES2020"
   ],
-  "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@repo/types": "*",
     "@types/pg": "^8.20.0",
     "dotenv": "^17.4.2",
     "pg": "^8.22.0"

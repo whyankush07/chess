@@ -378,6 +378,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chess/history-worker@workspace:apps/history-worker":
+  version: 0.0.0-use.local
+  resolution: "@chess/history-worker@workspace:apps/history-worker"
+  dependencies:
+    "@repo/db": "npm:*"
+    ioredis: "npm:^5.11.1"
+  languageName: unknown
+  linkType: soft
+
 "@dotenvx/dotenvx@npm:^1.48.4":
   version: 1.75.1
   resolution: "@dotenvx/dotenvx@npm:1.75.1"
@@ -1055,6 +1064,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@repo/db@workspace:packages/db"
   dependencies:
+    "@repo/types": "npm:*"
     "@repo/typescript-config": "npm:*"
     "@types/pg": "npm:^8.20.0"
     dotenv: "npm:^17.4.2"

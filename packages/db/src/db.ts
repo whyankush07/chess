@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 export class DB {
-    private client: Pool;
+    client: Pool;
 
     constructor(dbUrl: string) {
         this.client = new Pool({

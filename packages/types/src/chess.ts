@@ -1,9 +1,8 @@
 export interface MOVE_EVENT {
     gameId: string
-    from: string;
-    to: string;
-    player: PlayerType;
-    promotion?: string
+    notation: string;
+    startfen: string
+    endfen: string;
 }
 
 export type PlayerType = "Black" | "White"

@@ -19,6 +19,7 @@ export interface ChessState {
 
 export interface UseChessReturn extends ChessState {
   makeMove: (from: Square, to: Square, promotion?: string) => Move | null;
+  makeMoveNotation: (notation: string) => Move | null;
   getLegalMoves: (square: Square) => Square[];
   reset: () => void;
   loadFen: (fen: string) => boolean;
@@ -69,6 +70,24 @@ export default function useChess(
     [deriveState, onMove]
   );
 
+  const makeMoveNotation = useCallback(
+    (notation: string) => {
+      const game = gameRef.current;
+      try {
+        const move = game.move(notation);
+        if (move) {
+          setState(deriveState(game));
+          onMove?.(move);
+          return move;
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    },
+    [deriveState, onMove]
+  );
+
   const getLegalMoves = useCallback((square: Square): Square[] => {
     const moves = gameRef.current.moves({ square, verbose: true });
     return moves.map((m) => m.to as Square);
@@ -101,6 +120,7 @@ export default function useChess(
   return {
     ...state,
     makeMove,
+    makeMoveNotation,
     getLegalMoves,
     reset,
     loadFen,

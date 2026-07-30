@@ -4,7 +4,7 @@ import { Publisher } from './Publisher';
 
 const wss = new WebSocketServer({ port: 8080 });
 
-const publisher = new Publisher(process.env.REDISURL || "redis://localhost:6379");
+const publisher = new Publisher("redis://localhost:6379");
 
 const gameManager = new GameManager(publisher); 
 

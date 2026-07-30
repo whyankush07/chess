@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MOVE, INIT_GAME } from "@repo/types/message";
+import { MOVE, INIT_GAME, type MovePayload } from "@repo/types/message";
 
 const WEBSOCKET_URL = "ws://localhost:8080"
 
 let globalSocket: WebSocket | null = null;
 
-type MovePayload = { from: string; to: string; promotion?: string };
 let moveCallback: ((payload: MovePayload) => void) | null = null;
 
 export function setMoveCallback(cb: ((payload: MovePayload) => void) | null) {

@@ -1,0 +1,9 @@
+- Before this file was created, the following work was done:
+
+1. The project has v1 ready where we can exchange moves and two players can play chess, while giving each other a check and checkmate.
+     However, none of this is stored in a database, and the game state is lost when the server restarts.
+
+- 29/06/2024 - The database package was created to store the game state and moves in a database. The DB class was implemented to handle database connections and migrations.
+- 29/06/2024 - The redis stream was setup to handle the game state and pass moves to a another server which can pass it to database, use it for analytics, can be streamed to users.
+- 30/06/2024 - The MOVE_EVENT type was created to pass moves from publisher and query for inserting a move was created.
+- 30/06/2024 - The history-worker was created to listen to the redis stream and insert moves into the database. The consumer class was implemented to handle the redis stream and acknowledge messages.

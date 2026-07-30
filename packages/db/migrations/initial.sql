@@ -38,7 +38,7 @@ CREATE TABLE "Move" (
     "gameId" TEXT NOT NULL,
     "moveNumber" INTEGER NOT NULL,
     "notation" TEXT NOT NULL,
-    "comments" TEXT,
+    "comments" TEXT
     "startFen" TEXT NOT NULL,
     "endFen" TEXT NOT NULL,
     "timeTaken" INTEGER DEFAULT 0,

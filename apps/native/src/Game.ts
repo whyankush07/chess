@@ -42,9 +42,9 @@ export class Game {
 
     makeMove(socket: WebSocket, move: {
         from: string,
-        to: string
+        to: string,
+        san: string
     }) {
-        console.log("move recieved by the game manager");
         if (this.board.turn() === 'w' && socket != this.whiteP) {
             this.blackP.send(JSON.stringify({
                 type: INFO,
@@ -63,7 +63,7 @@ export class Game {
             }))
             return;
         }
-        console.log("Move passed to the board")
+        const startFEN = this.board.fen();
         try {
             this.board.move(move);
         } catch (err) {
@@ -76,7 +76,7 @@ export class Game {
             }));
             return;
         }
-        console.log("moved successfully at board");
+        const endFEN = this.board.fen();
 
         if (this.board.isGameOver()) {
             const winner = this.board.isCheckmate()
@@ -87,7 +87,6 @@ export class Game {
             this.blackP.send(JSON.stringify({ type: GAME_OVER, payload }));
         }
 
-        const player = socket === this.whiteP ? "White" : "Black";
         const opponent = socket === this.whiteP ? this.blackP : this.whiteP;
         opponent.send(JSON.stringify({
             type: MOVE,
@@ -96,9 +95,9 @@ export class Game {
 
         const move_event: MOVE_EVENT = {
             gameId: this.gameId,
-            from: move.from,
-            to: move.to,
-            player: player
+            notation: move.san,
+            startfen: startFEN,
+            endfen: endFEN
         }
         this.publisher.publishMoveEvent(move_event);
     }

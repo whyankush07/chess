@@ -1,0 +1,16 @@
+{
+  "name": "@chess/history-worker",
+  "packageManager": "yarn@4.17.1",
+  "type": "commonjs",
+  "targets": [
+    "ES2020"
+  ],
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsc -b && node dist/index.js"
+  },
+  "dependencies": {
+    "@repo/db": "*",
+    "ioredis": "^5.11.1"
+  }
+}
