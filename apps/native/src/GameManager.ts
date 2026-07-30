@@ -1,13 +1,13 @@
 import { Game } from "./Game";
-import { WebSocket } from "ws";
 import { GAME_OVER, INIT_GAME, MOVE } from "@repo/types/message";
 import { Publisher } from "./Publisher";
+import { User } from "./User";
 
 export class GameManager {
     private games: Game[];
-    private pendingUser : WebSocket | null;
-    private users : WebSocket[];
-    private publisher : Publisher;
+    private pendingUser: User | null;
+    private users: User[];
+    private publisher: Publisher;
 
     constructor(publisher: Publisher) {
         this.publisher = publisher;
@@ -16,47 +16,48 @@ export class GameManager {
         this.users = [];
     }
 
-    addUser(socket : WebSocket) {
-        this.users.push(socket);
-        console.log("User " + this.users.length + " connected");
-        console.log("total games: ", this.games.length);
-        this.addHandler(socket);
+    addUser(user: User) {
+        this.users.push(user);
+        this.addHandler(user);
     }
 
-    removeUser(socket: WebSocket) {
-        this.users = this.users.filter((user) => user !== socket);
-        const gameIdx = this.games.findIndex((g) => g.whiteP === socket || g.blackP === socket);
+    removeUser(user: User) {
+        this.users = this.users.filter((u) => u !== user);
+        const gameIdx = this.games.findIndex((g) => g.whiteP === user || g.blackP === user);
         if (gameIdx !== -1) {
             const game = this.games[gameIdx];
-            const opponent = game.whiteP === socket ? game.blackP : game.whiteP;
-            opponent.send(JSON.stringify({ type: GAME_OVER, payload: { winner: null } }));
+            const opponent = game.whiteP === user ? game.blackP : game.whiteP;
+            opponent.send({ type: GAME_OVER, payload: { winner: null } });
             opponent.close();
             this.games.splice(gameIdx, 1);
         }
-        if (this.pendingUser === socket) {
+        if (this.pendingUser === user) {
             this.pendingUser = null;
         }
     }
 
-    addHandler(socket : WebSocket) {
-        socket.on("message" , (data) => {
-            const msg = JSON.parse(data.toString());
-            if (msg.type == INIT_GAME) {
+    private addHandler(user: User) {
+        user.onMessage((data) => {
+            const msg = JSON.parse(data);
+            if (msg.type === INIT_GAME) {
+                user.id = msg.payload.userId;
                 if (this.pendingUser) {
-                    const game = new Game(this.pendingUser, socket, this.publisher);
+                    const game = new Game(this.pendingUser, user, this.publisher);
                     this.pendingUser = null;
                     this.games.push(game);
                 } else {
-                    this.pendingUser = socket;
+                    this.pendingUser = user;
                 }
-            } else if (msg.type == MOVE) {
-                console.log("move message received", msg.payload);
-                console.log(this.users.length);
-                const game = this.games.find((game) => game.whiteP === socket || game.blackP === socket);
+            } else if (msg.type === MOVE) {
+                const game = this.games.find((g) => g.whiteP === user || g.blackP === user);
                 if (game) {
-                    game.makeMove(socket, msg.payload);
+                    game.makeMove(user, msg.payload);
                 }
             }
-        })
+        });
+
+        user.onClose(() => {
+            this.removeUser(user);
+        });
     }
 }

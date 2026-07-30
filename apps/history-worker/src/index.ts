@@ -1,6 +1,7 @@
 import { MOVE_EVENT } from "@repo/types/chess";
 import { Consumer } from "./Consumer";
-import { persistMove } from "@repo/db/queries/moves"
+import { persistMove } from "@repo/db/queries/moves";
+import db from "@repo/db/index";
 
 const consumer = new Consumer("redis://localhost:6379");
 const STREAM = "game:moves"
@@ -28,7 +29,7 @@ async function main() {
 
                 const event: MOVE_EVENT = JSON.parse(payload);
                 console.log("Received event:", id, " -> ", event);
-                await persistMove(event);
+                await persistMove(db, event);
                 await consumer.acknowlegde(STREAM, id);
             }
         }

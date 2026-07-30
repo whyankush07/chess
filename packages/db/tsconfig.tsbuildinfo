@@ -1,1 +1,1 @@
-{"root":["./src/config.ts","./src/db.ts","./src/index.ts","./src/queries/moves.ts"],"version":"6.0.3"}
+{"root":["./src/config.ts","./src/db.ts","./src/index.ts","./src/queries/moves.ts","./src/queries/user.ts"],"version":"6.0.3"}

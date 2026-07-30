@@ -26,7 +26,7 @@ export default function useSocket() {
             console.log("Websocket connection established");
             globalSocket = ws;
             setSocket(ws);
-            ws.send(JSON.stringify({ type: INIT_GAME }));
+            ws.send(JSON.stringify({ type: INIT_GAME, payload: { userId: ""} })); // send userId from here
         }
 
         ws.onmessage = (event) => {

@@ -1,6 +1,5 @@
 import Redis from "ioredis";
-import { MOVE_EVENT } from "@repo/types/chess";
-import { Game } from "./Game";
+import { MOVE_EVENT, Game } from "@repo/types/chess";
 
 export class Publisher {
     private client: Redis;
