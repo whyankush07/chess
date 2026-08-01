@@ -1,0 +1,28 @@
+{
+  "name": "@chess/server",
+  "packageManager": "yarn@4.17.1",
+  "type": "commonjs",
+  "targets": [
+    "ES2020"
+  ],
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsc -b && node dist/index.js"
+  },
+  "dependencies": {
+    "@repo/db": "*",
+    "@repo/types": "*",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1",
+    "@types/jsonwebtoken": "^9"
+  }
+}

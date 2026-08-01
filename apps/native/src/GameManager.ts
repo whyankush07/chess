@@ -41,6 +41,7 @@ export class GameManager {
             const msg = JSON.parse(data);
             if (msg.type === INIT_GAME) {
                 user.id = msg.payload.userId;
+                console.log("User with ID: ", user.id, " initiated a game!");
                 if (this.pendingUser) {
                     const game = new Game(this.pendingUser, user, this.publisher);
                     this.pendingUser = null;

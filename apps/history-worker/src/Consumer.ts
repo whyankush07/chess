@@ -29,6 +29,7 @@ export class Consumer {
         try {
             await this.ensureConnected();
             await this.client.xgroup("CREATE", "game:moves", GROUP, "0", "MKSTREAM");
+            await this.client.xgroup("CREATE", "game:games", GROUP, "0", "MKSTREAM");
             console.log(`Consumer group '${GROUP}' created for stream 'game:moves'`);
         } catch (err) {
             if ((err as Error).message.includes("BUSYGROUP")) {

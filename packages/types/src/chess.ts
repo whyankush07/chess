@@ -22,11 +22,25 @@ export interface Game {
     event?: string | null;
 }
 
-export enum TimeControl { 'CLASSICAL', 'RAPID', 'BLITZ', 'BULLET' };
-export enum GameStatus { 'IN_PROGRESS', 'COMPLETED', 'ABANDONED' };
+export const TimeControl = {
+    CLASSICAL: "CLASSICAL",
+    RAPID: "RAPID",
+    BLITZ: "BLITZ",
+    BULLET: "BULLET",
+} as const;
+
+export type TimeControl = (typeof TimeControl)[keyof typeof TimeControl];
+
+export const GameStatus = {
+    IN_PROGRESS: "IN_PROGRESS",
+    COMPLETED: "COMPLETED",
+    ABANDONED: "ABANDONED",
+} as const;
+
+export type GameStatus = (typeof GameStatus)[keyof typeof GameStatus];
 
 export interface User {
-    id: string;
+    id?: string;
     username: string;
     email: string;
     password: string;

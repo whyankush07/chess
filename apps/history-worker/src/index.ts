@@ -1,6 +1,7 @@
 import { MOVE_EVENT } from "@repo/types/chess";
 import { Consumer } from "./Consumer";
 import { persistMove } from "@repo/db/queries/moves";
+import { createGame } from "@repo/db/queries/game";
 import db from "@repo/db/index";
 
 const consumer = new Consumer("redis://localhost:6379");
@@ -11,6 +12,29 @@ async function main() {
     await consumer.ensureGroup();
 
     while (true) {
+        const gameResult = await consumer.consume("game:games");
+        if (gameResult) {
+            for (const [streamName, entries] of gameResult as [string, [string, string[]][]][]) {
+                if (streamName !== "game:games") continue;
+
+                for (const [id, fields] of entries) {
+                    let payload: string | undefined;
+                    for (let i = 0; i < fields.length; i += 2) {
+                        if (fields[i] === "payload") {
+                            payload = fields[i + 1];
+                            break;
+                        }
+                    }
+                    if (!payload) continue;
+
+                    const game = JSON.parse(payload);
+                    console.log("Received game event:", id, " -> ", game);
+                    await createGame(db, game);
+                    await consumer.acknowlegde("game:games", id);
+                }
+            }
+        }
+
         const result = await consumer.consume(STREAM);
         if (!result) continue;
 

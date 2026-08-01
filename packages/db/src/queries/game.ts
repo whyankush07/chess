@@ -5,6 +5,7 @@ export const createGame = async (db: DB, game: Game) => {
     const query = `
         INSERT INTO "Game" ("id", "whitePlayerId", "blackPlayerId", "status", "timeControl", "startAt") 
         VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT ("id") DO NOTHING
     `;
 
     const date = new Date();

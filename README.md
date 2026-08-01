@@ -22,7 +22,19 @@ Browser (Next.js)                 Node.js WebSocket Server              Redis
 │   @repo/types      │           │   @repo/db ──────────────┼──────▶│ ready,   │
 │   @repo/ui         │           │                          │       │ unwired) │
 └────────────────────┘           └──────────────────────────┘       └──────────┘
+												 │
+												 │ consumes
+												 ▼
+											 ┌──────────────┐
+											 │ History      │
+											 │ Worker       │
+											 │ (subscriber) │
+											 └──────────────┘
 ```
+
+## ER Diagram
+
+![ER diagram of the tables](ER.png)
 
 ### How it plays
 
@@ -41,6 +53,7 @@ Browser (Next.js)                 Node.js WebSocket Server              Redis
 |---|---|
 | **apps/web** | Next.js 16 frontend — landing, lobby, game board, WebSocket client |
 | **apps/native** | Node.js WebSocket server — game matching, authoritative move validation, Redis publishing |
+| **apps/history-worker** | Redis Streams consumer — subscribes to `game:moves` for async history processing |
 | **packages/db** | PostgreSQL client + schema (`User`, `Game`, `Move` tables) — prepared but not yet wired into game flow |
 | **packages/types** | Shared TypeScript types and message constants (`INIT_GAME`, `MOVE`, `GAME_OVER`, etc.) |
 | **packages/ui** | Shared React component stubs |
