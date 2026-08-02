@@ -6,7 +6,7 @@
     "ES2020"
   ],
   "scripts": {
-    "start": "node dist/index.js",
+    "build": "tsc -b",
     "dev": "tsc -b && node dist/index.js"
   },
   "dependencies": {
