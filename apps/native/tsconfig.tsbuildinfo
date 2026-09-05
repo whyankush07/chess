@@ -1,1 +1,1 @@
-{"root":["./src/game.ts","./src/gamemanager.ts","./src/publisher.ts","./src/user.ts","./src/index.ts"],"version":"5.9.2"}
+{"root":["./src/game.ts","./src/gamemanager.ts","./src/matchmaker.ts","./src/publisher.ts","./src/redisclient.ts","./src/user.ts","./src/index.ts"],"version":"6.0.3"}

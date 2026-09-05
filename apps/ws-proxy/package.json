@@ -1,0 +1,19 @@
+{
+  "name": "@repo/ws-proxy",
+  "version": "1.0.0",
+  "description": "WebSocket load balancer/proxy in front of the native chess WS servers",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b && node dist/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "typescript": "5.9.2"
+  },
+  "packageManager": "yarn@4.17.1"
+}
