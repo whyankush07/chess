@@ -30,6 +30,7 @@ A simple real-time chess app.
 ## Main parts
 
 - apps/web - the chess website
+- apps/mobile - the Expo React Native mobile app
 - apps/native - the WebSocket game server
 - apps/history-worker - background worker for move history
 - packages/db - database schema and queries
