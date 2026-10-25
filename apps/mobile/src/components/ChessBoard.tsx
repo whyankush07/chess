@@ -7,29 +7,44 @@ import {
   useWindowDimensions,
 } from "react-native";
 import type { Square } from "chess.js";
-import { SvgXml } from "react-native-svg";
-import { PIECE_SVGS } from "../constants/piecesSvg";
 
 type Piece = {
   type: string;
   color: "w" | "b";
 };
 
+export const PIECE_UNICODE: Record<string, Record<string, string>> = {
+  w: {
+    k: "\u2654",
+    q: "\u2655",
+    r: "\u2656",
+    b: "\u2657",
+    n: "\u2658",
+    p: "\u2659",
+  },
+  b: {
+    k: "\u265A",
+    q: "\u265B",
+    r: "\u265C",
+    b: "\u265D",
+    n: "\u265E",
+    p: "\u265F",
+  },
+};
+
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 function parseFen(fen?: string): (Piece | null)[][] {
-  const target =
-    fen && fen.trim()
-      ? fen.trim().split(" ")[0]!
-      : DEFAULT_FEN.split(" ")[0]!;
-  const rows = target.split("/");
+  const trimmed =
+    fen && fen.trim() ? fen.trim().split(" ")[0]! : DEFAULT_FEN.split(" ")[0]!;
+  const rawRows = trimmed.split("/");
+  const rows =
+    rawRows.length === 8 ? rawRows : DEFAULT_FEN.split(" ")[0]!.split("/");
   return rows.map((row) => {
     const files: (Piece | null)[] = [];
     for (const ch of row) {
       if (ch >= "1" && ch <= "8") {
-        for (let i = 0; i < Number(ch); i++) {
-          files.push(null);
-        }
+        for (let i = 0; i < Number(ch); i++) files.push(null);
       } else {
         const color: "w" | "b" = ch === ch.toUpperCase() ? "w" : "b";
         files.push({ type: ch.toLowerCase(), color });
@@ -43,7 +58,7 @@ function squareName(rank: number, file: number): Square {
   return `${"abcdefgh"[file]}${8 - rank}` as Square;
 }
 
-interface ChessBoardProps {
+export interface ChessBoardProps {
   fen: string;
   selectedSquare: Square | null;
   validMoves: Square[];
@@ -92,127 +107,129 @@ export const ChessBoard: React.FC<ChessBoardProps> = ({
   }
 
   const boardPadding = 16;
-  const availableWidth = Math.min(windowWidth - boardPadding * 2, 400);
-  const squareSize = Math.floor(availableWidth / 8);
+  const maxBoardContainer = Math.min(windowWidth - boardPadding * 2, 400);
+  const coordWidth = 18;
+  const squareSize = Math.floor((maxBoardContainer - coordWidth - 4) / 8);
   const boardSize = squareSize * 8;
-  const pieceSize = Math.floor(squareSize * 0.88);
-
-  const lightColor = "#eeeed2";
-  const darkColor = "#769656";
-  const lightLastMove = "#f7ec59";
-  const darkLastMove = "#baca44";
+  const pieceFontSize = Math.round(squareSize * 0.72);
 
   return (
     <View style={styles.container}>
-      <View
-        style={[
-          styles.boardFrame,
-          { width: boardSize, height: boardSize },
-        ]}
-      >
-        {displayRanks.map((r, rowIndex) => (
-          <View key={r} style={[styles.row, { height: squareSize }]}>
-            {displayFiles.map((f, colIndex) => {
-              const piece = board[r]?.[f];
-              const sq = squareName(r, f);
-              const isLight = (r + f) % 2 === 0;
-              const isSelected = selectedSquare === sq;
-              const isValidMove = validMoveSet.has(sq);
-              const isLastMove =
-                lastMove && (sq === lastMove.from || sq === lastMove.to);
-              const isKingInCheck = kingSquare === sq;
+      <View style={styles.boardWrapper}>
+        {/* Left rank labels: exactly as in web */}
+        <View style={[styles.rankColumn, { width: coordWidth }]}>
+          {displayRanks.map((r) => (
+            <View
+              key={r}
+              style={[styles.coordRankCell, { height: squareSize }]}
+            >
+              <Text style={styles.coordText}>{8 - r}</Text>
+            </View>
+          ))}
+        </View>
 
-              let squareBg = isLight ? lightColor : darkColor;
-              if (isSelected) {
-                squareBg = "#f7ec5a";
-              } else if (isLastMove) {
-                squareBg = isLight ? lightLastMove : darkLastMove;
-              } else if (isKingInCheck) {
-                squareBg = "rgba(239, 68, 68, 0.7)";
-              }
+        {/* Board grid and bottom file labels */}
+        <View style={styles.boardColumn}>
+          <View
+            style={[
+              styles.grid,
+              { width: boardSize + 4, height: boardSize + 4 },
+            ]}
+          >
+            {displayRanks.map((r) => (
+              <View key={r} style={[styles.row, { height: squareSize }]}>
+                {displayFiles.map((f) => {
+                  const piece = board[r]?.[f];
+                  const sq = squareName(r, f);
+                  const isLight = (r + f) % 2 === 0;
+                  const isSelected = selectedSquare === sq;
+                  const isValidMove = validMoveSet.has(sq);
+                  const isLastMove =
+                    lastMove && (sq === lastMove.from || sq === lastMove.to);
+                  const isKingInCheck = kingSquare === sq;
 
-              const showRankLabel = colIndex === 0;
-              const showFileLabel = rowIndex === 7;
-              const labelColor = isLight ? darkColor : lightColor;
+                  let squareBg = isLight ? "#f0d9b5" : "#b58863";
+                  if (isSelected) {
+                    squareBg = "#f7ec5a";
+                  } else if (isLastMove) {
+                    squareBg = isLight
+                      ? "rgba(247, 236, 89, 0.8)"
+                      : "rgba(181, 136, 99, 0.8)";
+                  } else if (isKingInCheck) {
+                    squareBg = "rgba(239, 68, 68, 0.65)";
+                  }
 
-              const pieceSvg =
-                piece && PIECE_SVGS[piece.color]?.[piece.type]
-                  ? PIECE_SVGS[piece.color][piece.type]
-                  : null;
-
-              return (
-                <Pressable
-                  key={sq}
-                  onPress={() => onSquareClick?.(sq)}
-                  style={[
-                    styles.square,
-                    {
-                      width: squareSize,
-                      height: squareSize,
-                      backgroundColor: squareBg,
-                    },
-                  ]}
-                >
-                  {showRankLabel && (
-                    <Text
+                  return (
+                    <Pressable
+                      key={sq}
+                      onPress={() => onSquareClick?.(sq)}
                       style={[
-                        styles.coordRank,
-                        { color: labelColor },
-                      ]}
-                    >
-                      {8 - r}
-                    </Text>
-                  )}
-
-                  {showFileLabel && (
-                    <Text
-                      style={[
-                        styles.coordFile,
-                        { color: labelColor },
-                      ]}
-                    >
-                      {"abcdefgh"[f]}
-                    </Text>
-                  )}
-
-                  {pieceSvg && (
-                    <SvgXml
-                      xml={pieceSvg}
-                      width={pieceSize}
-                      height={pieceSize}
-                    />
-                  )}
-
-                  {isValidMove && !piece && (
-                    <View
-                      style={[
-                        styles.validMoveDot,
+                        styles.square,
                         {
-                          width: Math.floor(squareSize * 0.32),
-                          height: Math.floor(squareSize * 0.32),
-                          borderRadius: Math.floor(squareSize * 0.16),
+                          width: squareSize,
+                          height: squareSize,
+                          backgroundColor: squareBg,
                         },
                       ]}
-                    />
-                  )}
+                    >
+                      {piece && (
+                        <Text
+                          style={[
+                            styles.pieceText,
+                            {
+                              fontSize: pieceFontSize,
+                              lineHeight: squareSize,
+                            },
+                          ]}
+                        >
+                          {PIECE_UNICODE[piece.color]?.[piece.type] ?? ""}
+                        </Text>
+                      )}
 
-                  {isValidMove && !!piece && (
-                    <View
-                      style={[
-                        styles.validMoveCaptureRing,
-                        {
-                          width: squareSize - 4,
-                          height: squareSize - 4,
-                          borderRadius: (squareSize - 4) / 2,
-                        },
-                      ]}
-                    />
-                  )}
-                </Pressable>
-              );
-            })}
+                      {isValidMove && !piece && (
+                        <View
+                          style={[
+                            styles.validMoveDot,
+                            {
+                              width: Math.floor(squareSize * 0.3),
+                              height: Math.floor(squareSize * 0.3),
+                              borderRadius: Math.floor(squareSize * 0.15),
+                            },
+                          ]}
+                        />
+                      )}
+
+                      {isValidMove && !!piece && (
+                        <View
+                          style={[
+                            styles.validMoveCaptureRing,
+                            {
+                              width: Math.floor(squareSize * 0.8),
+                              height: Math.floor(squareSize * 0.8),
+                              borderRadius: Math.floor(squareSize * 0.4),
+                            },
+                          ]}
+                        />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
           </View>
-        ))}
+
+          {/* Bottom file labels: exactly as in web */}
+          <View style={[styles.fileRow, { width: boardSize + 4 }]}>
+            {displayFiles.map((f) => (
+              <View
+                key={f}
+                style={[styles.coordFileCell, { width: squareSize }]}
+              >
+                <Text style={styles.coordText}>{"abcdefgh"[f]}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -224,16 +241,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
   },
-  boardFrame: {
-    borderRadius: 6,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: "#4d6438",
+  boardWrapper: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  rankColumn: {
+    flexDirection: "column",
+    marginTop: 2,
+  },
+  coordRankCell: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  coordText: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#737373",
+  },
+  boardColumn: {
+    flexDirection: "column",
+  },
+  grid: {
+    borderWidth: 2,
+    borderColor: "#262626",
+    flexDirection: "column",
   },
   row: {
     flexDirection: "row",
@@ -244,29 +275,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
   },
-  coordRank: {
-    position: "absolute",
-    top: 2,
-    left: 3,
-    fontSize: 10,
-    fontWeight: "700",
-    opacity: 0.85,
-  },
-  coordFile: {
-    position: "absolute",
-    bottom: 2,
-    right: 3,
-    fontSize: 10,
-    fontWeight: "700",
-    opacity: 0.85,
+  pieceText: {
+    color: "#171717",
+    textAlign: "center",
+    includeFontPadding: false,
   },
   validMoveDot: {
     position: "absolute",
-    backgroundColor: "rgba(0, 0, 0, 0.25)",
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
   },
   validMoveCaptureRing: {
     position: "absolute",
-    borderWidth: 4,
-    borderColor: "rgba(0, 0, 0, 0.25)",
+    borderWidth: 3,
+    borderColor: "rgba(0, 0, 0, 0.2)",
+  },
+  fileRow: {
+    flexDirection: "row",
+    paddingTop: 2,
+    paddingLeft: 2,
+  },
+  coordFileCell: {
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

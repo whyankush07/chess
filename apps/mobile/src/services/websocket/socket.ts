@@ -61,7 +61,12 @@ class WebSocketService {
           const { type, payload } = message;
 
           if (type === INIT_GAME) {
-            const color = payload.color === "White" ? "w" : "b";
+            const color =
+              payload.color === "White" ||
+              payload.color === "w" ||
+              payload.color === "white"
+                ? "w"
+                : "b";
             const data: GameInitPayload = {
               gameId: payload.gameId,
               color,

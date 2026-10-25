@@ -12,11 +12,13 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<{
   children: React.ReactNode;
 }>;
+
 const Navigator = Stack.Navigator as unknown as React.ComponentType<{
   initialRouteName?: keyof RootStackParamList;
-  screenOptions?: unknown;
+  screenOptions: unknown;
   children: React.ReactNode;
 }>;
+
 const Screen = Stack.Screen as unknown as React.ComponentType<{
   name: keyof RootStackParamList;
   component: React.ComponentType<any>;
